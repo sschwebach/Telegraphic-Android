@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="sam.wisc.edu.telegraphic" >
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/icon"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name=".SplashActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/app_name"
+            android:theme="@style/FullscreenTheme" >
+        </activity>
+        <activity
+            android:name=".LoginActivity"
+            android:label="@string/title_activity_login" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ImageListActivity"
+            android:label="@string/title_activity_image_list" >
+        </activity>
+        <activity
+            android:name=".ImageCanvasActivity"
+            android:label="@string/title_activity_image_canvas" >
+        </activity>
+        <activity
+            android:name=".ImageLauncherActivity"
+            android:label="@string/title_activity_image_launcher" >
+        </activity>
+    </application>
+
+</manifest>
