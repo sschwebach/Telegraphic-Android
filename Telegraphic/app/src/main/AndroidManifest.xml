@@ -17,7 +17,8 @@
         </activity>
         <activity
             android:name=".LoginActivity"
-            android:label="@string/title_activity_login" >
+            android:label="@string/title_activity_login"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,11 +27,13 @@
         </activity>
         <activity
             android:name=".ImageListActivity"
-            android:label="@string/title_activity_image_list" >
+            android:label="@string/title_activity_image_list"
+            android:screenOrientation="portrait">
         </activity>
         <activity
             android:name=".ImageCanvasActivity"
-            android:label="@string/title_activity_image_canvas" >
+            android:label="@string/title_activity_image_canvas"
+            android:screenOrientation="portrait">
         </activity>
         <activity
             android:name=".ImageLauncherActivity"

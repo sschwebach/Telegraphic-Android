@@ -1,31 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="50dp"
+    android:layout_width="wrap_content"
     android:layout_height="50dp">
 
-    <ImageView
-        android:id="@+id/image_thumb"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_alignParentLeft="true"
-        android:layout_margin="10dp"
-        android:layout_centerVertical="true"/>
 
     <TextView
         android:id="@+id/text_last_user"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/image_thumb"
-        android:text="hello"
-        android:layout_alignTop="@id/image_thumb"/>
+        android:textSize="16sp"
+        android:text="hello"/>
     <TextView
         android:id="@+id/text_remaining_time"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:layout_toRightOf="@id/image_thumb"
-        android:text="remaining"
-        android:layout_alignBottom="@id/image_thumb" />
+        android:layout_below="@id/text_last_user"
+        android:layout_marginTop="5dp"
+        android:textSize="16sp"
+        android:text="remaining" />
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"

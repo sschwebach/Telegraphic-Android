@@ -52,8 +52,6 @@ public class ImageListAdapter{
         editTime = currImage.editTime;
         hopsLeft = currImage.hopsRemaining;
         imageStr = currImage.imageString;
-        Log.e("ImageString", "" + currImage.imageString);
-        ((ImageView) toReturn.findViewById(R.id.image_thumb)).setImageBitmap(Utilities.decodeBase64(imageStr));
         ((TextView) toReturn.findViewById(R.id.text_last_user)).setText("Last edited by " + currImage.prev);
         ((TextView) toReturn.findViewById(R.id.text_remaining_time)).setText(currImage.hopsRemaining + " edits remaining");
         intent = new Intent(mContext, ImageCanvasActivity.class);
@@ -67,7 +65,6 @@ public class ImageListAdapter{
 //            @Override
 //            public void onClick(View v) {
 //                //start a new activity with this intent
-//                Log.e("image", intent.getStringExtra("IID"));
 //                //mContext.startActivity(intent);
 //            }
 //        });

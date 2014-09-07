@@ -1,14 +1,18 @@
 package sam.wisc.edu.telegraphic;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -33,6 +37,9 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import sam.wisc.edu.telegraphic.R;
 
@@ -46,18 +53,100 @@ public class ImageListActivity extends Activity{
     String prevU;
     int editTime;
     int hopsLeft;
+    Button newImage;
+    boolean isRunning = true;
     String imageString;
+    ListView dialogList;
+    Timer refreshTimer;
     UserImage toAdd;
+    Intent intent;
+    ArrayList<String> userList = new ArrayList<String>();
     ArrayList<ImageListItemView> itemList = new ArrayList<ImageListItemView>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        isRunning = true;
         setContentView(R.layout.activity_image_list);
         this.mActivity = this;
         images = new ArrayList<UserImage>();
         friends = new ArrayList<String>();
+
+
+        newImage = (Button) findViewById(R.id.button_new_image);
+        newImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                intent = new Intent(mActivity, ImageCanvasActivity.class);
+                final Dialog dialog = new Dialog(mActivity);
+                dialog.setContentView(R.layout.user_dialog);
+                dialog.setTitle("Send To:");
+                dialogList = (ListView) dialog.findViewById(R.id.list_view_users);
+                Button cancel = (Button) dialog.findViewById(R.id.button_dialog_cancel);
+
+                cancel.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+                dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        intent.putExtra("recipient", userList.get(position));
+                        dialog.dismiss();
+                        (mActivity).startActivity(intent);
+                    }
+                });
+                intent.putExtra("existing", false);
+                populateList(dialog);
+            }
+        });
+        //doSetup();
+    }
+
+    public void populateList(final Dialog dialog){
+        GetUserRequest request = new GetUserRequest();
+        request.execute(DataHolder.baseURL + DataHolder.userListURL);
+        dialog.show();
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        isRunning = true;
+        this.refreshTimer = new Timer();
+        this.refreshTimer.schedule(new TimerTask(){
+            @Override
+            public void run(){
+                TimerMethod();
+            }
+        }, 0, 5000);
+        if (imageList != null) {
+            imageList.removeAllViews();
+        }
         doSetup();
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        isRunning = false;
+        this.refreshTimer.cancel();
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+        isRunning = false;
+        this.refreshTimer.cancel();
+    }
+
+    @Override
+    protected  void onDestroy(){
+        super.onDestroy();
+        isRunning = false;
+        this.refreshTimer.cancel();
     }
 
     public void doSetup(){
@@ -68,7 +157,18 @@ public class ImageListActivity extends Activity{
         getImage.execute(DataHolder.baseURL + DataHolder.imageQueryURL);
     }
 
-
+    private void TimerMethod(){
+        this.runOnUiThread(new Runnable(){
+            @Override
+            public void run(){
+                PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+                if (pm.isScreenOn() && isRunning){
+                    imageList.removeAllViewsInLayout();
+                    mActivity.doSetup();
+                }
+            }
+        });
+    }
 
 
     private class ImageQueryTask extends AsyncTask<String, Void, String> {
@@ -83,7 +183,6 @@ public class ImageListActivity extends Activity{
             try{
                 json.put(toAdd.getName(), toAdd.getValue());
             }catch (Exception e){
-                Log.e("JSON Exception", e.toString());
             }
         }
 
@@ -100,7 +199,6 @@ public class ImageListActivity extends Activity{
                     BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
                     return reader.readLine();
                 } catch (Exception e) {
-                    Log.e("Exception", e.toString());
                 }
             }else{
                 try {
@@ -110,7 +208,6 @@ public class ImageListActivity extends Activity{
                     BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
                     return reader.readLine();
                 } catch (Exception e) {
-                    Log.e("BackgroundTaskException", e.toString());
                 }
             }
             return null;
@@ -119,7 +216,6 @@ public class ImageListActivity extends Activity{
         @Override
         protected  void onPostExecute(String response){
             if (response != null) {
-                Log.e("RESPONSE", "" + response);
             }else{
                 return;
             }
@@ -137,29 +233,27 @@ public class ImageListActivity extends Activity{
                         currJSON = finalObject;
                         success = currJSON.getBoolean("success");
                         JSONArray imageArray = currJSON.getJSONArray("items");
-                        for (int i = 0; i < imageArray.length(); i++){
-                            currJSON = imageArray.getJSONObject(i);
-                            IID = currJSON.getString("imageUUID");
-                            Log.e("IID", IID);
-                            prevU = currJSON.getString("previousUser");
-                            Log.e("prevU", prevU);
-                            editTime = currJSON.getInt("editTime");
-                            Log.e("editTime", "" + editTime);
-                            hopsLeft = currJSON.getInt("hopsLeft");
-                            Log.e("hopsLeft", "" + hopsLeft);
-                            imageString = currJSON.getString("image");
-                            Log.e("image", imageString);
-                            toAdd = new UserImage(IID, prevU, editTime, hopsLeft, imageString);
-                            //create each view and add it to the linear layout
+                        itemList.clear();
+                        if (imageArray.length() > 0) {
+                            for (int i = 0; i < imageArray.length(); i++) {
+                                currJSON = imageArray.getJSONObject(i);
+                                IID = currJSON.getString("imageUUID");
+                                prevU = currJSON.getString("previousUser");
+                                editTime = currJSON.getInt("editTime");
+                                hopsLeft = currJSON.getInt("hopsLeft");
+                                imageString = currJSON.getString("image");
+                                toAdd = new UserImage(IID, prevU, editTime, hopsLeft, imageString);
+                                //create each view and add it to the linear layout
 
-                            ImageListItemView viewToAdd = new ImageListItemView(mActivity, toAdd);
-                            itemList.add(viewToAdd);
+                                ImageListItemView viewToAdd = new ImageListItemView(mActivity, toAdd);
+                                itemList.add(viewToAdd);
 
+                            }
                         }
 
                         mActivity.addViews(itemList);
-                        Log.e("Size", "" + images.size());
-                        Log.e("Image adapter images", "" + images.get(0).IID);
+                        if (images.size() > 0) {
+                        }
 
                         break;
                     case GETFRIENDS:
@@ -177,16 +271,79 @@ public class ImageListActivity extends Activity{
 
                 }
             }catch (Exception e){
-                Log.e("Exception", e.toString() + e.getStackTrace().toString());
             }
         }
     }
 
     public void addViews(ArrayList<ImageListItemView> toAdd){
+        imageList.removeAllViews();
         for (int i = 0; i < toAdd.size();  i++){
             imageList.addView(toAdd.get(i).getView());
         }
     }
 
+    private class GetUserRequest extends AsyncTask<String, Void, String> {
+
+
+        List<NameValuePair> pairs = new ArrayList<NameValuePair>();
+        int requestControl = -1; //0 = request, 1 = query, 2 = release
+        boolean isPost = false;
+        JSONObject json = new JSONObject();
+
+        public void addNVP(NameValuePair toAdd){
+            try{
+                json.put(toAdd.getName(), toAdd.getValue());
+            }catch (Exception e){
+            }
+        }
+        @Override
+        protected String doInBackground(String... params) {
+            try{
+                HttpClient client = new DefaultHttpClient();
+                HttpGet get = new HttpGet(params[0]);
+                HttpResponse response = client.execute(get);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
+                return reader.readLine();
+            }catch (Exception e){
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String response){
+            if (response != null){
+            }
+            JSONObject finalObject = new JSONObject();
+            try{
+                finalObject = new JSONObject(response);
+            }catch (JSONException e){
+
+            }
+            try{
+                JSONObject currJSON;
+                boolean success;
+                currJSON = finalObject;
+                success = Boolean.parseBoolean(currJSON.getString("success"));
+                JSONArray userArray = currJSON.getJSONArray("items");
+                userList.clear();
+                for (int i = 0; i < userArray.length(); i++){
+                    currJSON = userArray.getJSONObject(i);
+                    String userName = currJSON.getString("username");
+                    if (userName != DataHolder.username) {
+                        userList.add(userName);
+                    }
+                }
+                //now fill in the listview and all that sheeeeeiiiiit
+                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+                        mActivity,
+                        android.R.layout.simple_list_item_1,
+                        userList);
+                dialogList.setAdapter(arrayAdapter);
+
+            }catch(Exception e){
+                //lol
+            }
+        }
+    }
 }
 

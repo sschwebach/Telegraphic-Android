@@ -113,7 +113,6 @@ public class LoginHandler {
             try{
                 json.put(toAdd.getName(), toAdd.getValue());
             }catch (Exception e){
-                Log.e("JSON Exception", e.toString());
             }
         }
 
@@ -135,7 +134,6 @@ public class LoginHandler {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
                     return reader.readLine();
                 }catch (Exception e){
-                    Log.e("Exception", e.toString());
                 }
             }else{
                 try {
@@ -145,7 +143,6 @@ public class LoginHandler {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
                     return reader.readLine();
                 } catch (Exception e) {
-                    Log.e("BackgroundTaskException", e.toString());
                 }
             }
             return null;
@@ -154,7 +151,6 @@ public class LoginHandler {
         @Override
         protected void onPostExecute(String response){
             if (response != null){
-                Log.e("RESPONSE", "" + response);
             }
 
             if (response == null){
@@ -179,6 +175,7 @@ public class LoginHandler {
                         //BEGIN TRANSITION TO NEW ACTIVITY
                         if (success){
                             storeLogin();
+                            DataHolder.username = userName;
                             Intent intent = new Intent(mActivity, ImageListActivity.class);
                             mActivity.startActivity(intent);
                             //make an intent and all that shit

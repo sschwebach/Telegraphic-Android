@@ -27,6 +27,7 @@ public class ImageViewCanvas extends View {
     private Canvas mCanvas;
     private Path mPath;
     private Paint mBitmapPaint;
+    private Paint rPaint;
     Context context;
     private Paint circlePaint;
     private Path circlePath;
@@ -44,6 +45,9 @@ public class ImageViewCanvas extends View {
         mPaint.setStrokeCap(Paint.Cap.ROUND);
         mPaint.setStrokeWidth(12);
         mPath = new Path();
+        rPaint = new Paint();
+        rPaint.setColor(Color.WHITE);
+        rPaint.setStyle(Paint.Style.FILL);
         mBitmapPaint = new Paint(Paint.DITHER_FLAG);
         circlePaint = new Paint();
         circlePath = new Path();
@@ -69,6 +73,7 @@ public class ImageViewCanvas extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
         if (undrawn) {
             if (oldImage != null) {
                 oldImage = getResizedBitmap(oldImage, getHeight(), getWidth());
@@ -77,6 +82,8 @@ public class ImageViewCanvas extends View {
         }
         if (oldImage != null) {
             canvas.drawBitmap(oldImage, 0, 0, mBitmapPaint);
+        }else{
+            canvas.drawRect(0, 0, getWidth(), getHeight(), rPaint);
         }
         mPaint.setStrokeWidth(12 * mScaleFactor);
         canvas.drawBitmap(mBitmap, 0, 0, mBitmapPaint);

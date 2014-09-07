@@ -14,9 +14,10 @@ public class DataHolder {
     public static String baseURL = "http://kersten.io:8888";
     public static String registerURL = "/user/register";
     public static String loginURL = "/user/login";
-    public static String userListURL = "user/list";
+    public static String userListURL = "/user/list";
     public static String imageCreateURL = "/image/create";
     public static String imageUpdateURL = "/image/update"; //still need id afterwards
     public static String imageQueryURL = "/image/query";
+    public static String imageCleanupURL = "/image/seen";
     public static UserImage currImage;
 }
