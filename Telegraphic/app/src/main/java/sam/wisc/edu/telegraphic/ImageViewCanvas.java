@@ -77,8 +77,9 @@ public class ImageViewCanvas extends View {
         if (undrawn) {
             if (oldImage != null) {
                 oldImage = getResizedBitmap(oldImage, getHeight(), getWidth());
+                undrawn = false;
             }
-            undrawn = false;
+
         }
         if (oldImage != null) {
             canvas.drawBitmap(oldImage, 0, 0, mBitmapPaint);

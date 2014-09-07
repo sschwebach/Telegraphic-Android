@@ -1,5 +1,6 @@
 package sam.wisc.edu.telegraphic;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -79,6 +80,12 @@ public class LoginHandler {
             editor.putString(uNameKey, this.userName);
             editor.putString(pWordKey, this.pwordHash);
             editor.commit();
+        }else{
+            SharedPreferences settings = mActivity.getSharedPreferences(DataHolder.storageLoc, 0);
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putString(uNameKey, "");
+            editor.putString(pWordKey, "");
+            editor.commit();
         }
     }
 
@@ -118,6 +125,7 @@ public class LoginHandler {
 
         @Override
         protected void onPreExecute(){
+            mActivity.pDialog.show();
             //might need something
         }
 
@@ -176,7 +184,7 @@ public class LoginHandler {
                         if (success){
                             storeLogin();
                             DataHolder.username = userName;
-                            Intent intent = new Intent(mActivity, ImageListActivity.class);
+                            Intent intent = new Intent(mActivity, CombinedImageActivity.class);
                             mActivity.startActivity(intent);
                             //make an intent and all that shit
                         }
@@ -195,7 +203,9 @@ public class LoginHandler {
                         break;
                 }
             }catch (Exception e){
-                //lol
+                Log.e("Exception", e.toString());
+            }finally{
+                mActivity.pDialog.dismiss();
             }
         }
     }

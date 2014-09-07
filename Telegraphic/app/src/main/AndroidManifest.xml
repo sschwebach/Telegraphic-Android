@@ -6,6 +6,7 @@
 
     <application
         android:allowBackup="true"
+        android:largeHeap="true"
         android:icon="@drawable/icon"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
@@ -28,6 +29,11 @@
         <activity
             android:name=".ImageListActivity"
             android:label="@string/title_activity_image_list"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name=".CombinedImageActivity"
+            android:label="Draw!"
             android:screenOrientation="portrait">
         </activity>
         <activity

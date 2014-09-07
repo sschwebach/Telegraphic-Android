@@ -2,6 +2,7 @@ package sam.wisc.edu.telegraphic;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -60,12 +61,16 @@ public class ImageListActivity extends Activity{
     Timer refreshTimer;
     UserImage toAdd;
     Intent intent;
+    ProgressDialog pDialog;
     ArrayList<String> userList = new ArrayList<String>();
     ArrayList<ImageListItemView> itemList = new ArrayList<ImageListItemView>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        pDialog = new ProgressDialog(this);
+        pDialog.setTitle("Refreshing");
+        pDialog.setMessage("Please Wait");
         isRunning = true;
         setContentView(R.layout.activity_image_list);
         this.mActivity = this;
@@ -78,6 +83,7 @@ public class ImageListActivity extends Activity{
             @Override
             public void onClick(View v) {
                 intent = new Intent(mActivity, ImageCanvasActivity.class);
+                intent.putExtra("existing", false);
                 final Dialog dialog = new Dialog(mActivity);
                 dialog.setContentView(R.layout.user_dialog);
                 dialog.setTitle("Send To:");
@@ -95,10 +101,14 @@ public class ImageListActivity extends Activity{
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         intent.putExtra("recipient", userList.get(position));
                         dialog.dismiss();
-                        (mActivity).startActivity(intent);
+                        try {
+                            (mActivity).startActivity(intent);
+                        }catch (Exception e){
+                            Log.e("EXCEPTION", e.toString());
+                        }
                     }
                 });
-                intent.putExtra("existing", false);
+
                 populateList(dialog);
             }
         });
@@ -121,7 +131,7 @@ public class ImageListActivity extends Activity{
             public void run(){
                 TimerMethod();
             }
-        }, 0, 5000);
+        }, 0, 8000);
         if (imageList != null) {
             imageList.removeAllViews();
         }
@@ -186,6 +196,10 @@ public class ImageListActivity extends Activity{
             }
         }
 
+        @Override
+        protected void onPreExecute(){
+            pDialog.show();
+        }
         @Override
         protected String doInBackground(String...arg0){
             if (isPost) {
@@ -271,6 +285,8 @@ public class ImageListActivity extends Activity{
 
                 }
             }catch (Exception e){
+            }finally{
+                pDialog.dismiss();
             }
         }
     }

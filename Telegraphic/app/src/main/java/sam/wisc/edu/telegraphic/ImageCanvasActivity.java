@@ -1,6 +1,7 @@
 package sam.wisc.edu.telegraphic;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -24,6 +25,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -57,15 +59,19 @@ public class ImageCanvasActivity extends Activity {
     TextView timeRemaining;
     int currTime;
     boolean isRunning = true;
+    ProgressDialog pDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        pDialog = new ProgressDialog(this);
+        pDialog.setTitle("Sending");
+        pDialog.setMessage("Please Wait");
         mActivity = this;
         setContentView(R.layout.activity_image_canvas);
         mCanvas = new ImageViewCanvas(this);
         ((LinearLayout) findViewById(R.id.linear_canvas)).addView(mCanvas);
-        this.currImage = DataHolder.currImage;
+        //this.currImage = DataHolder.currImage;
         Intent intent = getIntent();
         existing = intent.getBooleanExtra("existing", false);
         recipient = intent.getStringExtra("recipient");
@@ -77,8 +83,8 @@ public class ImageCanvasActivity extends Activity {
             prev = intent.getStringExtra("prev");
 
 
-            imageStr = intent.getStringExtra("imageString");
-            mCanvas.oldImage = Utilities.decodeBase64(imageStr);
+            getImageStr();
+
         }
         doSetup();
     }
@@ -114,6 +120,12 @@ public class ImageCanvasActivity extends Activity {
                 mCanvas.changeColor(Color.BLACK);
             }
         });
+    }
+
+    public void getImageStr(){
+        SubmitImageTask getImageTask = new SubmitImageTask();
+        getImageTask.creation = true;
+        getImageTask.addNVP(new BasicNameValuePair("accessToken", DataHolder.accessToken));
     }
 
     @Override
@@ -212,13 +224,18 @@ public class ImageCanvasActivity extends Activity {
 
     {
         JSONObject json = new JSONObject();
-        int creation = 0;
+        boolean creation = false;
         public void addNVP(NameValuePair toAdd){
             try{
                 json.put(toAdd.getName(), toAdd.getValue());
             }catch (Exception e){
                 Log.e("JSON Exception", e.toString());
             }
+        }
+
+        @Override
+        protected void onPreExecute(){
+            pDialog.show();
         }
         @Override
         protected String doInBackground(String... params) {
@@ -250,16 +267,33 @@ public class ImageCanvasActivity extends Activity {
                 //lol
             }
             try{
-                JSONObject currJSON;
-                boolean success;
-                currJSON = finalObject;
-                success = Boolean.parseBoolean(currJSON.getString("success"));
-                if (success){
-                    mActivity.finish();
+                if (creation){//get the image
+                    JSONObject currJSON;
+                    boolean success;
+                    currJSON = finalObject;
+                    JSONArray imageArray = currJSON.getJSONArray("items");
+                    for (int i = 0; i < imageArray.length(); i++){
+                        JSONObject current = imageArray.getJSONObject(i);
+                        if (current.getString("imageUUID") == IID){
+                            imageStr = current.getString("image");
+                            mCanvas.oldImage = Utilities.decodeBase64(imageStr);
+                        }
+                    }
+                }else {//send the image
+                    JSONObject currJSON;
+                    boolean success;
+                    currJSON = finalObject;
+                    success = Boolean.parseBoolean(currJSON.getString("success"));
+                    if (success) {
+                        pDialog.dismiss();
+                        mActivity.finish();
 
+                    }
                 }
             }catch(Exception e){
                 //lol
+            }finally{
+                pDialog.dismiss();
             }
         }
     }

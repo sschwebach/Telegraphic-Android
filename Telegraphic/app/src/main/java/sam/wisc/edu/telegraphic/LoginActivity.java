@@ -1,6 +1,7 @@
 package sam.wisc.edu.telegraphic;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -18,10 +19,14 @@ import sam.wisc.edu.telegraphic.R;
 
 public class LoginActivity extends Activity {
     LoginHandler mHandler;
+    ProgressDialog pDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        pDialog = new ProgressDialog(this);
+        pDialog.setTitle("Loading");
+        pDialog.setMessage("Please Wait");
         setContentView(R.layout.activity_login);
         mHandler = new LoginHandler((Context) this, this);
         doSetup();
@@ -47,6 +52,8 @@ public class LoginActivity extends Activity {
                 DataHolder.password = passwordText.getText().toString();
                 if (rememberCheck.isChecked()) {
                     mHandler.remember = true;
+                }else{
+                    mHandler.remember = false;
                 }
                 mHandler.login();
             }

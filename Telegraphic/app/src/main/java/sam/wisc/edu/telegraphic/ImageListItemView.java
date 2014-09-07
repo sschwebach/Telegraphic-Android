@@ -54,7 +54,7 @@ public class ImageListItemView implements AdapterView.OnClickListener{
         intent.putExtra("prev", mImage.prev);
         intent.putExtra("editTime", mImage.editTime);
         intent.putExtra("hopsRemaining", mImage.hopsRemaining);
-        intent.putExtra("imageString", mImage.imageString);
+        //intent.putExtra("imageString", mImage.imageString);
         final Dialog dialog = new Dialog(mContext);
         dialog.setContentView(R.layout.user_dialog);
         dialog.setTitle("Send To:");
